@@ -12,19 +12,29 @@ import (
 	"time"
 
 	"github.com/iharshyadav/backend/internal/config"
+	"github.com/iharshyadav/backend/internal/http/handlers/handlerfunction"
+	"github.com/iharshyadav/backend/internal/storage/sqlite"
 )
 
 func main() {
 	// setup config
 	cfg := config.Configuration()
 
+	// setting up the database
+	storage, err := sqlite.New(cfg)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	slog.Info("database connected", slog.String("env", cfg.Env), slog.Any("storage", storage))
+
 	// router setup
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /",func(w http.ResponseWriter , r *http.Request){
-		w.Write([]byte("Welcome to backend server"))
-	})
-
+	router.HandleFunc("POST /api/user",handlerfunction.Create(storage))
+	router.HandleFunc("GET /api/user/{id}",handlerfunction.GetById(storage))
+	router.HandleFunc("GET /api/user",handlerfunction.GetList(storage))
 
 	// setting up the server
 	server := http.Server{
