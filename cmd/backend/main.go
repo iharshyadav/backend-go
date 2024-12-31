@@ -21,7 +21,7 @@ func main() {
 	cfg := config.Configuration()
 
 	// setting up the database
-	storage, err := sqlite.New(cfg)
+	storage, err := sqlite.New(cfg) 
 
 	if err != nil {
 		log.Fatal(err)
