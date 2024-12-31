@@ -17,15 +17,15 @@ jobs:
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build Docker Image
-        run: docker build -t iharshyadav/go-backend:${{ github.sha }} .
+        run: docker build -t iharshyadav/backend-go:${{ github.sha }} .
 
       - name: Push Docker Image
-        run: docker push iharshyadav/go-backend:${{ github.sha }}
+        run: docker push iharshyadav/backend-go:${{ github.sha }}
 
       - name: Tag Latest
         run: |
-          docker tag iharshyadav/go-backend:${{ github.sha }} iharshyadav/go-backend:latest
-          docker push iharshyadav/go-backend:latest
+          docker tag iharshyadav/backend-go:${{ github.sha }} iharshyadav/backend-go:latest
+          docker push iharshyadav/backend-go:latest
 
   deploy:
     needs: build
@@ -34,7 +34,7 @@ jobs:
       - name: Pull Docker Image
         run: |
           set -x
-          docker pull iharshyadav/go-backend:latest
+          docker pull iharshyadav/backend-go:latest
 
       - name: Stop and Remove Old Container
         run: |
@@ -44,4 +44,4 @@ jobs:
       - name: Run New Container
         run: |
           set -x
-          docker run -d -p 4040:4040 --name go-app-container iharshyadav/go-backend:latest
+          docker run -d -p 4040:4040 --name go-app-container iharshyadav/backend-go:latest
