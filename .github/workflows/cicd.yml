@@ -1,4 +1,4 @@
-name: Deploy Go Application
+name: Deploy Go backend
 
 on:
   push:
@@ -11,19 +11,30 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
-      - name: Login to docker hub
+
+      - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build docker image
-        run: docker build -t iharshyadav/go-backend .
-      - name: Push image to docker hub
-        run: docker push iharshyadav/go-backend:latest
+
+      - name: Build Docker image
+        run: docker build -t iharshyadav/go-backend:${{ github.sha }} .
+
+      - name: Push image to Docker Hub
+        run: docker push iharshyadav/go-backend:${{ github.sha }}
+
+      - name: Tag latest
+        run: |
+          docker tag iharshyadav/go-backend:${{ github.sha }} iharshyadav/go-backend:latest
+          docker push iharshyadav/go-backend:latest
+
   deploy:
     needs: build
     runs-on: self-hosted
     steps:
-      - name: Pull docker image
+      - name: Pull Docker image
         run: docker pull iharshyadav/go-backend:latest
+
       - name: Delete old container
-        run: docker rm -f go-app-container  
-      - name: Run docker container          
-        run: docker run -d -p 4040:4040 --name go-app-container iharshyadav/go-backend
+        run: docker rm -f go-app-container || true
+
+      - name: Run Docker container
+        run: docker run -d -p 4040:4040 --name go-app-container iharshyadav/go-backend:latest
