@@ -15,7 +15,7 @@ import (
 	"github.com/iharshyadav/backend/internal/http/handlers/handlerfunction"
 	"github.com/iharshyadav/backend/internal/storage/sqlite"
 )
- 
+
 func main() {
 	// setup config
 	cfg := config.Configuration()
