@@ -44,4 +44,8 @@ jobs:
       - name: Run New Container
         run: |
           set -x
-          docker run -d -p 4040:4040 --name go-app-container iharshyadav/backend-go:latest
+          docker run -d -p 4040:4040 \
+            --name go-app-container \
+            -v $(pwd)/config:/app/config \
+            iharshyadav/backend-go:latest \
+            -config config/local.yaml
