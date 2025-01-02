@@ -1,51 +1,32 @@
-name: Deploy Go Backend
+name: Deploy to EC2
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Source
-        uses: actions/checkout@v4
-
-      - name: Login to Docker Hub
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Build Docker Image
-        run: docker build -t iharshyadav/backend-go:${{ github.sha }} .
-
-      - name: Push Docker Image
-        run: docker push iharshyadav/backend-go:${{ github.sha }}
-
-      - name: Tag Latest
-        run: |
-          docker tag iharshyadav/backend-go:${{ github.sha }} iharshyadav/backend-go:latest
-          docker push iharshyadav/backend-go:latest
-
   deploy:
-    needs: build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    
     steps:
-      - name: Pull Docker Image
-        run: |
-          set -x
-          docker pull iharshyadav/backend-go:latest
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /home/ec2-user/golang-backend
+          
+          git pull origin master
+          
+          sudo pkill main || true
+          sudo fuser -k 4040/tcp || true
+          sleep 2
+          
+          mkdir -p /home/ec2-user/golang-backend/storage
+          chmod 755 /home/ec2-user/golang-backend/storage
 
-      - name: Stop and Remove Old Container
-        run: |
-          set -x
-          docker rm -f go-app-container || true
-
-      - name: Run New Container
-        run: |
-          set -x
-          docker run -d -p 4040:4040 \
-            --name go-app-container \
-            -v /home/iharshyadav/actions-runner/_work/backend-go/backend-go/config:/app/config \
-            iharshyadav/backend-go:latest \
-            --config config/local.yaml
+          CGO_ENABLED=1 go build -o main cmd/backend/main.go
+          
+          nohup ./main -config config/local.yaml > output.log 2>&1 &
