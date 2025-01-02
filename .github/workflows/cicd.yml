@@ -13,19 +13,19 @@ jobs:
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
-        username: ec2-user
+        username: ubuntu
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd /home/ec2-user/golang-backend
+          cd /home/ubuntu/golang-backend
           
-          git pull origin master
+          git pull origin main
           
           sudo pkill main || true
           sudo fuser -k 4040/tcp || true
           sleep 2
           
-          mkdir -p /home/ec2-user/golang-backend/storage
-          chmod 755 /home/ec2-user/golang-backend/storage
+          mkdir -p /home/ubuntu/golang-backend/storage
+          chmod 755 /home/ubuntu/golang-backend/storage
 
           CGO_ENABLED=1 go build -o main cmd/backend/main.go
           
