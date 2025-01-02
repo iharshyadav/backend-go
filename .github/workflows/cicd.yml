@@ -16,6 +16,7 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_KEY }}
         script: |
+          mkdir -p /home/ubuntu/golang-backend
           cd /home/ubuntu/golang-backend
           
           git pull origin main
