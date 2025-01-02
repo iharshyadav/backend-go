@@ -46,6 +46,6 @@ jobs:
           set -x
           docker run -d -p 4040:4040 \
             --name go-app-container \
-            -v $(pwd)/config:/app/config \
+            -v /home/ubuntu/actions-runner/_work/backend-go/backend-go/config:/app/config \
             iharshyadav/backend-go:latest \
-            -config config/local.yaml
+            --config config/local.yaml
