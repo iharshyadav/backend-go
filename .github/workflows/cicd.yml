@@ -7,7 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Deploy to EC2
       uses: appleboy/ssh-action@master
@@ -18,16 +18,24 @@ jobs:
         script: |
           mkdir -p /home/ubuntu/golang-backend
           cd /home/ubuntu/golang-backend
-          
+
+          if [ ! -d .git ]; then
+              git clone https://github.com/iharshyadav/backend-go.git .
+          fi
           git pull origin main
-          
+
           sudo pkill main || true
           sudo fuser -k 4040/tcp || true
           sleep 2
-          
-          mkdir -p /home/ubuntu/golang-backend/storage
-          chmod 755 /home/ubuntu/golang-backend/storage
+
+          mkdir -p storage
+          chmod 755 storage
+
+          if ! command -v go &> /dev/null; then
+              sudo apt-get update
+              sudo apt-get install -y golang
+          fi
 
           CGO_ENABLED=1 go build -o main cmd/backend/main.go
-          
+
           nohup ./main -config config/local.yaml > output.log 2>&1 &
